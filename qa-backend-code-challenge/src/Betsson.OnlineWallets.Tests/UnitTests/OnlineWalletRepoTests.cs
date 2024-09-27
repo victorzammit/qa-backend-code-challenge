@@ -3,10 +3,30 @@
 /// </summary>
 
 using Betsson.OnlineWallets.Data;
+using Betsson.OnlineWallets.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace Betsson.OnlineWallets.Tests.UnitTests;
 
 public class OnlineWalletRepoTests {
     private readonly DbContextOptions<OnlineWalletContext> _options;
+    private readonly OnlineWalletContext _context;
+    private readonly OnlineWalletRepository _repository;
+
+    public OnlineWalletRepoTests() {
+
+        // Set up in-memory database
+        _options = new DbContextOptionsBuilder<OnlineWalletContext>()
+            .UseInMemoryDatabase(databaseName: "TesterDb").Options;
+
+        // Create online wallet context with in-memory db
+        _context = new OnlineWalletContext(_options);
+
+        // Start the wallet repo using the context
+        _repository = new OnlineWalletRepository(_context);
+
+        // Ensure the database is clean before running tests
+        _context.Database.EnsureDeleted();
+        _context.Database.EnsureCreated();
+    }
 }
