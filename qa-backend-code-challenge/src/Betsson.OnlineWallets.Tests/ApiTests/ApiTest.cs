@@ -48,8 +48,8 @@ public class OnlineWalletApiTests : IClassFixture<WebApplicationFactory<Startup>
     }
 
     [Fact]
-    public async Task PostWithdrawal_InsufficientBalance_ReturnsBadRequest()
-    {
+    public async Task PostWithdrawal_InsufficientBalance_ReturnsBadRequest() {
+        
         // Set up a new withdrawal request exceeding available balance in online wallet
         var withdrawalRequest = new WithdrawalRequest {Amount = 1000};
         var withdrawal = _mapper.Map<Withdrawal>(withdrawalRequest);
