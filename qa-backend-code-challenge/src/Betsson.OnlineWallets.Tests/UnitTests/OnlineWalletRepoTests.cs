@@ -29,4 +29,14 @@ public class OnlineWalletRepoTests {
         _context.Database.EnsureDeleted();
         _context.Database.EnsureCreated();
     }
+
+    [Fact]
+    public async Task GetLastOnlineWalletEntryAsync_ReturnsNull_WhenNoEntriesExist()
+    {
+        // Retrieves last entry on online wallet, should return null since no entries
+        // have been made
+        var result = await _repository.GetLastOnlineWalletEntryAsync();
+
+        Assert.Null(result);
+    }
 }
