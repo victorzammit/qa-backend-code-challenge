@@ -1,4 +1,3 @@
-using Xunit;
 using Betsson.OnlineWallets.Models;
 
 namespace Betsson.OnlineWallets.UnitTests;
