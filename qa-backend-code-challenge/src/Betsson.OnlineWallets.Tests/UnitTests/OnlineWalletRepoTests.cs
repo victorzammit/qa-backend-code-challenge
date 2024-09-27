@@ -43,7 +43,7 @@ public class OnlineWalletRepoTests {
 
     [Fact]
     public async Task AddOnlineWalletEntryAsync_AddsNewEntrySuccessfully() {
-        
+
         // Creates a new entry to be added to the online wallet db
         var entry = new OnlineWalletEntry {Amount = 50, BalanceBefore = 0};
 
@@ -56,4 +56,29 @@ public class OnlineWalletRepoTests {
         Assert.Equal(50, lastEntry.Amount);
     }
 
+    [Fact]
+    public async Task GetLastOnlineWalletEntryAsync_ReturnsMostRecentEntry() {
+
+        // Create two entries to be added to the online wallet. Add a time offset to
+        // the first entry of 1 hour
+        var entry1 = new OnlineWalletEntry {
+            Amount = 50, BalanceBefore = 0,
+            EventTime = DateTimeOffset.Now.AddHours(-1)
+            };
+            
+        var entry2 = new OnlineWalletEntry {
+            Amount = 100,
+            BalanceBefore = 50,
+            EventTime = DateTimeOffset.Now
+            };
+
+        // Add the new entries in the online wallet.
+        await _repository.InsertOnlineWalletEntryAsync(entry1);
+        await _repository.InsertOnlineWalletEntryAsync(entry2);
+
+        // Retrieve the last entry added to the online wallet. Check that value matches
+        // that of entry2
+        var lastEntry = await _repository.GetLastOnlineWalletEntryAsync();
+        Assert.Equal(100, lastEntry.Amount);
+    }
 }
