@@ -3,6 +3,7 @@
 /// </summary>
 
 using Betsson.OnlineWallets.Data;
+using Betsson.OnlineWallets.Data.Models;
 using Betsson.OnlineWallets.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,12 +32,28 @@ public class OnlineWalletRepoTests {
     }
 
     [Fact]
-    public async Task GetLastOnlineWalletEntryAsync_ReturnsNull_WhenNoEntriesExist()
-    {
+    public async Task GetLastOnlineWalletEntryAsync_ReturnsNull_WhenNoEntriesExist() {
+
         // Retrieves last entry on online wallet, should return null since no entries
         // have been made
         var result = await _repository.GetLastOnlineWalletEntryAsync();
 
         Assert.Null(result);
     }
+
+    [Fact]
+    public async Task AddOnlineWalletEntryAsync_AddsNewEntrySuccessfully() {
+        
+        // Creates a new entry to be added to the online wallet db
+        var entry = new OnlineWalletEntry {Amount = 50, BalanceBefore = 0};
+
+        // Adds the new entry to the online wallet
+        await _repository.InsertOnlineWalletEntryAsync(entry);
+
+        // Checks that entry has been successfully registered in online wallet
+        var lastEntry = await _repository.GetLastOnlineWalletEntryAsync();
+        Assert.NotNull(lastEntry);
+        Assert.Equal(50, lastEntry.Amount);
+    }
+
 }
