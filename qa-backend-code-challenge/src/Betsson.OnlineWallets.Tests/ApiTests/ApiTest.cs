@@ -63,16 +63,14 @@ public class OnlineWalletApiTests : IClassFixture<WebApplicationFactory<Startup>
 
     [Fact]
     public async Task PostWithdrawal_InsufficientBalance_ReturnsBadRequest() {
-        
         // Set up a new withdrawal request exceeding available balance in online wallet
-        var withdrawalRequest = new WithdrawalRequest {Amount = 1000};
+        var withdrawalRequest = new WithdrawalRequest { Amount = 1000 }; // Requesting to withdraw 1000
         var withdrawal = _mapper.Map<Withdrawal>(withdrawalRequest);
 
-        // Setting up lambda function to withdraw the funds specified in the withdrawal request.
         // Configure to throw Insufficient balance exception.
-        _onlineWalletServiceMock.Setup(s => s.WithdrawFundsAsync(withdrawal))
+        _onlineWalletServiceMock.Setup(s => s.WithdrawFundsAsync(It.IsAny<Withdrawal>()))
             .ThrowsAsync(new InsufficientBalanceException("Insufficient funds available"));
-
+            
         var content = new StringContent(
             JsonConvert.SerializeObject(withdrawalRequest), Encoding.UTF8, "application/json");
 
