@@ -10,6 +10,7 @@ using Betsson.OnlineWallets.Web.Models;
 
 using Moq;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System.Text;
 using System.Net;
@@ -22,17 +23,30 @@ public class OnlineWalletApiTests : IClassFixture<WebApplicationFactory<Startup>
     private readonly Mock<IOnlineWalletService> _onlineWalletServiceMock;
     private readonly IMapper _mapper;
 
-    public OnlineWalletApiTests(WebApplicationFactory<Startup> factory) {
+    public OnlineWalletApiTests(WebApplicationFactory<Startup> factory)
+        {
+            var mapperConfig = new MapperConfiguration(cfg => 
+            { cfg.AddProfile(new OnlineWalletMappingProfile()); }
+            );
+    
+            // Assert the configuration to ensure all mappings are valid
+            mapperConfig.AssertConfigurationIsValid();
 
-        _client = factory.CreateClient();
-        _onlineWalletServiceMock = new Mock<IOnlineWalletService>();
+            _mapper = mapperConfig.CreateMapper();
 
-        // AutoMapper setup using OnlineWalletMappingProfile
-        var mapperConfig = new MapperConfiguration(cfg => cfg.AddProfile(new OnlineWalletMappingProfile()));
-        _mapper = mapperConfig.CreateMapper();
-    }
+            _onlineWalletServiceMock = new Mock<IOnlineWalletService>();
+            // Create an HTTP client for the test server
+            _client = factory.WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureServices(services =>
+                {
+                    // Registration of Mock Service
+                    services.AddSingleton(_onlineWalletServiceMock.Object);
+                });
+            }).CreateClient();
+        }
 
-        [Fact]
+    [Fact]
     public async Task PostDeposit_InvalidDepositRequest_ReturnsBadRequest() {
         
         // Create a new invalid Deposit request. Convert to Json format
@@ -67,5 +81,26 @@ public class OnlineWalletApiTests : IClassFixture<WebApplicationFactory<Startup>
 
         // Evaluate response - should fail due to insufficient funds
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetBalance_ReturnsCorrectBalanceResponse() {
+        
+        // Arrange
+        var balance = new Balance{Amount = 500};
+        _onlineWalletServiceMock.Setup(s => s.GetBalanceAsync()).ReturnsAsync(balance);
+
+        // Act
+        var response = await _client.GetAsync("/OnlineWallet/Balance");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var responseContent = await response.Content.ReadAsStringAsync();
+        var balanceResponse = JsonConvert.DeserializeObject<BalanceResponse>(responseContent);
+        
+        // Verify the model is correctly mapped and returned
+        Assert.NotNull(balanceResponse);
+        Assert.Equal(500, balanceResponse.Amount);
     }
 }
