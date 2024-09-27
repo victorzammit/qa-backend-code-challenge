@@ -1,6 +1,9 @@
+/// <summary>
+/// Simple unit test for verifying 'Withdrawal' model functionality.
+/// </summary>
 using Betsson.OnlineWallets.Models;
 
-namespace Betsson.OnlineWallets.UnitTests;
+namespace Betsson.OnlineWallets.Tests.UnitTests;
 
 public class WithdrawalTests
 {
