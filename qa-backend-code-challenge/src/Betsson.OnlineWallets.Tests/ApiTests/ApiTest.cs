@@ -82,6 +82,33 @@ public class OnlineWalletApiTests : IClassFixture<WebApplicationFactory<Startup>
     }
 
     [Fact]
+    public async Task PostWithdrawal_ValidWithdrawalRequest_ReturnsUpdatedBalanceResponse() {
+        // Set up a new valid withdrawal request
+        var withdrawalRequest = new WithdrawalRequest { Amount = 50 }; // Valid withdrawal
+        var withdrawal = _mapper.Map<Withdrawal>(withdrawalRequest);
+
+        // Updated balance after withdrawal
+        var updatedBalance = new Balance { Amount = 450 };
+
+        _onlineWalletServiceMock.Setup(s => s.WithdrawFundsAsync(It.IsAny<Withdrawal>()))
+            .ReturnsAsync(updatedBalance);
+
+        var content = new StringContent(JsonConvert.SerializeObject(withdrawalRequest), Encoding.UTF8, "application/json");
+
+        // Send post request
+        var response = await _client.PostAsync("/OnlineWallet/Withdraw", content);
+
+        // Check for valid response
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var responseContent = await response.Content.ReadAsStringAsync();
+        var balanceResponse = JsonConvert.DeserializeObject<BalanceResponse>(responseContent);
+
+        // Verify the model is correctly mapped and the balance is updated
+        Assert.Equal(450, balanceResponse.Amount);
+    }
+
+    [Fact]
     public async Task GetBalance_ReturnsCorrectBalanceResponse() {
         
         // Arrange
