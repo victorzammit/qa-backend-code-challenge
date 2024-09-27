@@ -5,8 +5,8 @@
 /// </summary>
 namespace Betsson.OnlineWallets.Tests.UnitTests;
 
-public class SetupTest
-{
+public class SetupTest {
+    
     [Fact]
     public void SetupTest1(){
 

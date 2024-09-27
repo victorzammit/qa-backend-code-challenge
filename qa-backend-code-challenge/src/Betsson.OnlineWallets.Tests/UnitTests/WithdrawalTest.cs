@@ -5,8 +5,8 @@ using Betsson.OnlineWallets.Models;
 
 namespace Betsson.OnlineWallets.Tests.UnitTests;
 
-public class WithdrawalTests
-{
+public class WithdrawalTests {
+    
     [Fact]
     public void Withdrawal_Amount_CanBeSetAndRetrieved()
     {

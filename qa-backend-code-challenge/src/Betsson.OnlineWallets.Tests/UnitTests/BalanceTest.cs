@@ -6,6 +6,7 @@ using Betsson.OnlineWallets.Models;
 namespace Betsson.OnlineWallets.Tests.UnitTests;
 
 public class BalanceTests {
+    
     [Fact]
     public void Balance_Amount_CanBeSetAndRetrieved() {
         
