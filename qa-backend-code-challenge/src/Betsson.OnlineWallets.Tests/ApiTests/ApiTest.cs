@@ -62,12 +62,38 @@ public class OnlineWalletApiTests : IClassFixture<WebApplicationFactory<Startup>
     }
 
     [Fact]
+    public async Task PostDeposit_ValidDepositRequest_ReturnsUpdatedBalanceResponse() {
+        // Set up a valid deposity amount and the expected balance after a successful deposit
+        var depositRequest = new DepositRequest { Amount = 100 }; // Valid deposit
+        var deposit = _mapper.Map<Deposit>(depositRequest);
+
+        var balance = new Balance { Amount = 600 }; // Balance after the deposit
+        
+        // Configure to mock the valid deposit request and return the expected balance
+        _onlineWalletServiceMock.Setup(s => s.DepositFundsAsync(It.IsAny<Deposit>())).ReturnsAsync(balance);
+
+        var content = new StringContent(JsonConvert.SerializeObject(depositRequest), Encoding.UTF8, "application/json");
+
+        // Send post request to deposit into wallet
+        var response = await _client.PostAsync("/OnlineWallet/Deposit", content);
+
+        // Evaluate response code, should be successful
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var responseContent = await response.Content.ReadAsStringAsync();
+        var balanceResponse = JsonConvert.DeserializeObject<BalanceResponse>(responseContent);
+
+        // Verify the model is correctly mapped and the balance is updated
+        Assert.Equal(600, balanceResponse.Amount);
+    }
+
+    [Fact]
     public async Task PostWithdrawal_InsufficientBalance_ReturnsBadRequest() {
         // Set up a new withdrawal request exceeding available balance in online wallet
         var withdrawalRequest = new WithdrawalRequest { Amount = 1000 }; // Requesting to withdraw 1000
         var withdrawal = _mapper.Map<Withdrawal>(withdrawalRequest);
 
-        // Configure to throw Insufficient balance exception.
+        // Configure to mock the invalid withdrawal request and throw Insufficient balance exception.
         _onlineWalletServiceMock.Setup(s => s.WithdrawFundsAsync(It.IsAny<Withdrawal>()))
             .ThrowsAsync(new InsufficientBalanceException("Insufficient funds available"));
             
